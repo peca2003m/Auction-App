@@ -1,6 +1,7 @@
 package com.auction.user_service.service;
 
 
+import com.auction.user_service.dto.RegisterRequest;
 import com.auction.user_service.dto.UserDto;
 import com.auction.user_service.entity.User;
 import com.auction.user_service.repository.UserRepository;
@@ -36,17 +37,34 @@ public class UserService {
 
     }
 
+
+    public UserDto registerUser(RegisterRequest request) {
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .keycloakId(request.getKeycloakId())
+                .build();
+
+        userRepository.save(user);
+
+        return mapToDto(user);
+
+
+    }
+
     private UserDto mapToDto(User user) {
 
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setUsername(user.getUsername());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setLastName(user.getLastName());
-        userDto.setEmail(user.getEmail());
 
-
-        return userDto;
+        return UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
 
     }
 
