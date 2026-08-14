@@ -1,11 +1,14 @@
 package com.auction.core_service.service;
 
+import com.auction.core_service.config.RabbitMQConfig;
 import com.auction.core_service.dto.BidDto;
 import com.auction.core_service.entity.Auction;
 import com.auction.core_service.entity.Bid;
+import com.auction.core_service.event.BidPlacedEvent;
 import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ public class BidService {
 
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
+    private final RabbitTemplate rabbitTemplate;
 
 
     @Transactional
@@ -32,6 +36,10 @@ public class BidService {
             throw new RuntimeException("Bid amount must be greater than current price!");
         }
 
+        if (!auction.getStatus().equals("ACTIVE")) {
+            throw new RuntimeException("Auction is not active!");
+        }
+
         auction.setCurrentPrice(amount);
 
         Bid bid = Bid.builder()
@@ -43,6 +51,20 @@ public class BidService {
 
         bidRepository.save(bid);
         auctionRepository.save(auction);
+
+
+        BidPlacedEvent event = BidPlacedEvent.builder()
+                .auctionId(auctionId)
+                .bidderId(bidderId)
+                .amount(amount)
+                .build();
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.AUCTION_EXCHANGE,
+                RabbitMQConfig.BID_PLACED_QUEUE,
+                event
+        );
+
 
         return mapToDto(bid);
     }

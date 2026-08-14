@@ -1,9 +1,12 @@
 package com.auction.core_service.scheduler;
 
+import com.auction.core_service.config.RabbitMQConfig;
 import com.auction.core_service.entity.Auction;
+import com.auction.core_service.event.AuctionClosedEvent;
 import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,7 @@ public class AuctionScheduler {
 
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional
     @Scheduled(fixedRate = 60000)
@@ -34,6 +38,19 @@ public class AuctionScheduler {
 
 
             auctionRepository.save(auction);
+
+
+            AuctionClosedEvent event = AuctionClosedEvent.builder()
+                    .auctionId(auction.getId())
+                    .sellerId(auction.getSellerId())
+                    .winnerId(auction.getWinningBidId())
+                    .build();
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.AUCTION_EXCHANGE,
+                    RabbitMQConfig.AUCTION_CLOSED_QUEUE,
+                    event
+            );
 
         }
 
