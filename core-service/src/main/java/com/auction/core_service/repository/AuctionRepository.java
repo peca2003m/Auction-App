@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,8 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     List<Auction> findByStatus(String status);
 
     List<Auction> findBySellerId(UUID sellerId);
+
+    List<Auction> findByStatusAndEndsAtBefore(String status, LocalDateTime time);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Auction a WHERE a.id = :id")
