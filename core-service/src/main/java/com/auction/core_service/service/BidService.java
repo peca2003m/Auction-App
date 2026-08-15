@@ -40,6 +40,11 @@ public class BidService {
             throw new RuntimeException("Auction is not active!");
         }
 
+        UUID previousBidderId = bidRepository
+                .findFirstByAuctionIdOrderByAmountDesc(auction.getId())
+                .map(Bid::getBidderId)
+                .orElse(null);
+
         auction.setCurrentPrice(amount);
 
         Bid bid = Bid.builder()
@@ -57,6 +62,7 @@ public class BidService {
                 .auctionId(auctionId)
                 .bidderId(bidderId)
                 .amount(amount)
+                .previousBidderId(previousBidderId)
                 .build();
 
         rabbitTemplate.convertAndSend(
