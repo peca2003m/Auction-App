@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+const publicUserApi = axios.create({
+  baseURL: 'http://localhost:8081',
+});
+
 const userApi = axios.create({
   baseURL: 'http://localhost:8081',
 });
@@ -11,9 +15,6 @@ const coreApi = axios.create({
 const notificationApi = axios.create({
   baseURL: 'http://localhost:8083',
 });
-
-export const KEYCLOAK_REGISTER_URL = 
-  'http://localhost:8080/realms/auction/protocol/openid-connect/registrations?client_id=auction-client&response_type=code&redirect_uri=http://localhost:5173/auctions';
 
 const addAuthInterceptor = (instance) => {
   instance.interceptors.request.use((config) => {
@@ -34,12 +35,12 @@ export const authService = {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('client_id', 'auction-client');
-    params.append('client_secret', 'sada231fasddasdasd212313123');
+    params.append('client_secret', 'nYLtY4mRFmvX2KT9iStmTN7ONySf4BMm');
     params.append('username', username);
     params.append('password', password);
 
     const response = await axios.post(
-      'http://localhost:8080/realms/auction/protocol/openid-connect/token',
+      '/realms/auction/protocol/openid-connect/token',
       params
     );
     return response.data;
@@ -47,7 +48,8 @@ export const authService = {
 };
 
 export const userService = {
-  register: (data) => userApi.post('/api/users/register', data),
+  preRegister: (data) => publicUserApi.post('/api/users/pre-register', data),
+  register: (data) => publicUserApi.post('/api/users/register', data),
   getMe: () => userApi.get('/api/users/me'),
 };
 

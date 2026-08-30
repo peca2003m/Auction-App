@@ -18,3 +18,11 @@ spring.cloud.consul:
   port: 8500
   discovery:
     enabled: true
+
+keycloak:
+  server-url: http://localhost:8080
+  realm: auction
+  client-id: auction-client
+  client-secret: nYLtY4mRFmvX2KT9iStmTN7ONySf4BMm
+  admin-username: admin
+  admin-password: admin
