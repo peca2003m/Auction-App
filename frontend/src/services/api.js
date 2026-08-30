@@ -12,6 +12,9 @@ const notificationApi = axios.create({
   baseURL: 'http://localhost:8083',
 });
 
+export const KEYCLOAK_REGISTER_URL = 
+  'http://localhost:8080/realms/auction/protocol/openid-connect/registrations?client_id=auction-client&response_type=code&redirect_uri=http://localhost:5173/auctions';
+
 const addAuthInterceptor = (instance) => {
   instance.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
