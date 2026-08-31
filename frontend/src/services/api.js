@@ -43,6 +43,11 @@ export const authService = {
       '/realms/auction/protocol/openid-connect/token',
       params
     );
+
+    if (response.data.access_token) {
+      localStorage.setItem('token', response.data.access_token);
+    }
+
     return response.data;
   },
 };

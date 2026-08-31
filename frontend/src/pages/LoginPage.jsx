@@ -1,25 +1,22 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const {login} = useAuth();
-    const navigate = useNavigate();
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try{
-            await login(username, password);
-            navigate('/auctions');
-        }catch(err){
-            console.error('Login nije uspeo:', err);
-        }
-    };
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login(username, password);
+      navigate('/auctions');
+    } catch (err) {
+      console.error('Login nije uspeo:', err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -53,9 +50,9 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="text-center mt-4 text-sm">
-          Don't have an account? <a href="/register" className="text-blue-600">Register</a>
+          Don't have an account? <Link to="/preRegister" className="text-blue-600">Register</Link>
         </p>
       </div>
     </div>
-  )
+  );
 }
