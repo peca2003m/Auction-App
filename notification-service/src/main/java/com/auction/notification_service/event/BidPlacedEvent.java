@@ -17,6 +17,7 @@ public class BidPlacedEvent {
     private UUID bidderId;
     private BigDecimal amount;
     private UUID previousBidderId;
+    private String auctionTitle;
 
 
 }

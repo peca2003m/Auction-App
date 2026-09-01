@@ -32,7 +32,7 @@ export default function AuctionDetailPage() {
 
   const interval = setInterval(() => {
     fetchAuction();
-  }, 30000);
+  }, 10000);
 
   return () => clearInterval(interval);
 }, [id]);

@@ -70,6 +70,7 @@ public class BidService {
                 .bidderId(bidderId)
                 .amount(amount)
                 .previousBidderId(previousBidderId)
+                .auctionTitle(auction.getTitle())
                 .build();
 
         rabbitTemplate.convertAndSend(

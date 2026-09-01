@@ -3,6 +3,7 @@ package com.auction.notification_service.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -24,6 +25,6 @@ public class NotificationDto {
 
     private UUID auctionId;
 
-
+    private LocalDateTime createdAt;
 
 }

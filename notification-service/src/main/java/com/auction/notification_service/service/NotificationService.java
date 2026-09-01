@@ -47,6 +47,7 @@ public class NotificationService {
                 .isRead(notification.getIsRead())
                 .userId(notification.getUserId())
                 .auctionId(notification.getAuctionId())
+                .createdAt(notification.getCreatedAt())
                 .build();
 
     }

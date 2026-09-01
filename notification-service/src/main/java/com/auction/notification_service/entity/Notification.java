@@ -3,6 +3,7 @@ package com.auction.notification_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +33,9 @@ public class Notification {
 
     @Column(name = "auction_id")
     private UUID auctionId;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
 
 }

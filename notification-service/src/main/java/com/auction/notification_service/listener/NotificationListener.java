@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class NotificationListener {
@@ -18,10 +20,12 @@ public class NotificationListener {
     public void onBidPlaced(BidPlacedEvent event) {
         Notification notification = Notification.builder()
                 .type("OUTBID")
-                .message("You have been outbid!")
+                .message("You have been outbid on \"" + event.getAuctionTitle() + "\"! New price: $" + event.getAmount())
                 .isRead(false)
                 .userId(event.getPreviousBidderId())
                 .auctionId(event.getAuctionId())
+                .createdAt(LocalDateTime.now())
+
                 .build();
 
         if (event.getPreviousBidderId() != null) {
@@ -38,6 +42,7 @@ public class NotificationListener {
                     .isRead(false)
                     .userId(event.getWinnerId())
                     .auctionId(event.getAuctionId())
+                    .createdAt(LocalDateTime.now())
                     .build();
             notificationRepository.save(winnerNotification);
         }
@@ -48,6 +53,7 @@ public class NotificationListener {
                 .isRead(false)
                 .userId(event.getSellerId())
                 .auctionId(event.getAuctionId())
+                .createdAt(LocalDateTime.now())
                 .build();
         notificationRepository.save(sellerNotification);
     }
