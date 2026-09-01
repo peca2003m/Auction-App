@@ -36,6 +36,8 @@ public class AuctionDto {
 
     private UUID categoryId;
 
+    private UUID lastBidderId;
+
 
 
 }

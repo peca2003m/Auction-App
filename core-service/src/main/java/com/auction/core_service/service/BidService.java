@@ -26,24 +26,32 @@ public class BidService {
 
 
     @Transactional
-    public BidDto placeBid(UUID auctionId, BigDecimal amount, UUID bidderId){
-
+    public BidDto placeBid(UUID auctionId, BigDecimal amount, UUID bidderId) {
 
         Auction auction = auctionRepository.findByIdWithLock(auctionId)
                 .orElseThrow(() -> new RuntimeException("Auction not found!"));
-
-        if (amount.compareTo(auction.getCurrentPrice()) <= 0) {
-            throw new RuntimeException("Bid amount must be greater than current price!");
-        }
 
         if (!auction.getStatus().equals("ACTIVE")) {
             throw new RuntimeException("Auction is not active!");
         }
 
-        UUID previousBidderId = bidRepository
-                .findFirstByAuctionIdOrderByAmountDesc(auction.getId())
-                .map(Bid::getBidderId)
-                .orElse(null);
+        if (amount.compareTo(auction.getCurrentPrice()) <= 0) {
+            throw new RuntimeException("Bid amount must be greater than current price!");
+        }
+
+        if (auction.getSellerId().equals(bidderId)) {
+            throw new RuntimeException("You cannot bid on your own auction!");
+        }
+
+        var lastBid = bidRepository.findFirstByAuctionIdOrderByAmountDesc(auction.getId());
+
+        lastBid.ifPresent(bid -> {
+            if (bid.getBidderId().equals(bidderId)) {
+                throw new RuntimeException("You are already the highest bidder!");
+            }
+        });
+
+        UUID previousBidderId = lastBid.map(Bid::getBidderId).orElse(null);
 
         auction.setCurrentPrice(amount);
 
@@ -57,7 +65,6 @@ public class BidService {
         bidRepository.save(bid);
         auctionRepository.save(auction);
 
-
         BidPlacedEvent event = BidPlacedEvent.builder()
                 .auctionId(auctionId)
                 .bidderId(bidderId)
@@ -70,7 +77,6 @@ public class BidService {
                 RabbitMQConfig.BID_PLACED_QUEUE,
                 event
         );
-
 
         return mapToDto(bid);
     }

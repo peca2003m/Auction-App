@@ -71,6 +71,8 @@ public class AuctionService {
                 .sellerId(auction.getSellerId())
                 .winningBidId(auction.getWinningBidId())
                 .categoryId(auction.getCategory() != null ? auction.getCategory().getId() : null)
+                .lastBidderId(auction.getBids() == null || auction.getBids().isEmpty() ? null :
+                        auction.getBids().get(auction.getBids().size() - 1).getBidderId())
                 .build();
 
     }
