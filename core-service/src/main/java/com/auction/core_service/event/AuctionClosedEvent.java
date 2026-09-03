@@ -15,5 +15,6 @@ public class AuctionClosedEvent {
     private UUID auctionId;
     private UUID winnerId;
     private UUID sellerId;
+    private String auctionTitle;
 
 }

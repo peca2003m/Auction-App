@@ -8,6 +8,7 @@ import CreateAuctionPage from './pages/CreateAuctionPage';
 import NotificationsPage from './pages/NotificationsPage';
 import Navbar from './components/Navbar';
 import PreRegisterPage from './pages/PreRegisterPage';
+import ProfilePage from './pages/ProfilePage';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -31,6 +32,9 @@ function App() {
           } />
           <Route path="/auctions/create" element={
             <PrivateRoute><CreateAuctionPage /></PrivateRoute>
+          } />
+          <Route path="/profile" element={
+            <PrivateRoute><ProfilePage /></PrivateRoute>
           } />
           <Route path="/notifications" element={
             <PrivateRoute><NotificationsPage /></PrivateRoute>

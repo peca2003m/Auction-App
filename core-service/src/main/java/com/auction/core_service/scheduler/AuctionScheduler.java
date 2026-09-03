@@ -44,6 +44,7 @@ public class AuctionScheduler {
                     .auctionId(auction.getId())
                     .sellerId(auction.getSellerId())
                     .winnerId(auction.getWinningBidId())
+                    .auctionTitle(auction.getTitle())
                     .build();
 
             rabbitTemplate.convertAndSend(

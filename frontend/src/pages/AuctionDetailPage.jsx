@@ -17,15 +17,16 @@ export default function AuctionDetailPage() {
   const [bidSuccess, setBidSuccess] = useState('');
 
   const fetchAuction = async () => {
-    try {
-      const response = await auctionService.getById(id);
-      setAuction(response.data);
-    } catch (err) {
-      setError('Error loading auction.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const response = await auctionService.getById(id);
+    //console.log("Auction Response Data:", response.data);
+    setAuction(response.data);
+  } catch (err) {
+    setError('Error loading auction.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
   fetchAuction();
@@ -84,6 +85,19 @@ export default function AuctionDetailPage() {
         </div>
 
         <p className="text-gray-600 mb-6">{auction.description}</p>
+
+      {auction.imageUrls && auction.imageUrls.length > 0 && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {auction.imageUrls.map((url, i) => (
+            <img
+              key={i}
+              src={url}
+              alt={`auction ${i + 1}`}
+              className="w-32 h-32 object-cover rounded border"
+            />
+          ))}
+        </div>
+      )}
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gray-50 rounded p-4">

@@ -37,6 +37,9 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {user && (
             <>
+              <Link to="/profile" className="text-gray-600 hover:text-blue-600">
+                {user.username}
+              </Link>
               <Link to="/auctions" className="text-gray-600 hover:text-blue-600">
                 Auctions
               </Link>
@@ -48,7 +51,6 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <span className="text-gray-500 text-sm">{user.username}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
