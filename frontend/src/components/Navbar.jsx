@@ -20,7 +20,14 @@ export default function Navbar() {
 
     fetchUnread();
     const interval = setInterval(fetchUnread, 10000);
-    return () => clearInterval(interval);
+    
+    window.addEventListener('notificationsUpdated', fetchUnread);
+  
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('notificationsUpdated', fetchUnread);
+    };
+
   }, [user]);
 
   const handleLogout = () => {

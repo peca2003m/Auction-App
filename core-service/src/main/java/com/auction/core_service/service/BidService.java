@@ -9,6 +9,7 @@ import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     @Transactional
@@ -77,6 +79,11 @@ public class BidService {
                 RabbitMQConfig.AUCTION_EXCHANGE,
                 RabbitMQConfig.BID_PLACED_QUEUE,
                 event
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/auctions/" + auctionId,
+                mapToDto(bid)
         );
 
         return mapToDto(bid);

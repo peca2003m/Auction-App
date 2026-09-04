@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { auctionService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { connectWebSocket, disconnectWebSocket } from '../services/websocket';
 
 export default function AuctionDetailPage() {
   const { id } = useParams();
@@ -30,14 +31,22 @@ export default function AuctionDetailPage() {
 
   useEffect(() => {
   fetchAuction();
-
-  const interval = setInterval(() => {
-    fetchAuction();
-  }, 10000);
-
-  return () => clearInterval(interval);
 }, [id]);
 
+useEffect(() => {
+  connectWebSocket(id, (updatedBid) => {
+    setAuction((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentPrice: updatedBid.amount,
+        lastBidderId: updatedBid.bidderId,
+      };
+    });
+  });
+
+  return () => disconnectWebSocket();
+}, [id]);
   const handleBid = async (e) => {
     e.preventDefault();
     setBidError('');
