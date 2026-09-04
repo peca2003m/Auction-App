@@ -37,7 +37,7 @@ public class NotificationListener {
     public void onAuctionClosed(AuctionClosedEvent event) {
         if (event.getWinnerId() != null) {
             Notification winnerNotification = Notification.builder()
-                    .type("AUCTION_WON")
+                    .type("AUCTION WON")
                     .message("Congratulations! You won \"" + event.getAuctionTitle() + "\"!")
                     .isRead(false)
                     .userId(event.getWinnerId())
@@ -48,7 +48,7 @@ public class NotificationListener {
         }
 
         Notification sellerNotification = Notification.builder()
-                .type("AUCTION_CLOSED")
+                .type("AUCTION CLOSED")
                 .message("Your auction \"" + event.getAuctionTitle() + "\" has been closed!")
                 .isRead(false)
                 .userId(event.getSellerId())

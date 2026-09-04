@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auctionService } from '../services/api';
+import { categoryService } from '../services/api';
 
 const CLOUDINARY_CLOUD_NAME = 'defhuvc3m';
 const CLOUDINARY_PRESET = 'AuctionApp';
@@ -16,6 +17,13 @@ export default function CreateAuctionPage() {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const [categories, setCategories] = useState([]);
+  const [categoryId, setCategoryId] = useState('');
+
+  useEffect(() => {
+  categoryService.getAll().then(res => setCategories(res.data));
+  }, []);
 
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -59,8 +67,9 @@ export default function CreateAuctionPage() {
         title,
         description,
         startingPrice: parseFloat(startingPrice),
-        endsAt: new Date(endsAt).toISOString(),
+        endsAt: endsAt + ':00',
         imageUrls,
+        categoryId: categoryId || null,
       };
       await auctionService.create(payload);
       navigate('/auctions');
@@ -87,6 +96,20 @@ export default function CreateAuctionPage() {
           />
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Category</label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select category</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+        
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Description</label>
           <textarea

@@ -67,7 +67,7 @@ export default function NotificationsPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs px-2 py-1 rounded font-medium ${
-                    notification.type === 'AUCTION_WON'
+                    notification.type === 'AUCTION WON'
                       ? 'bg-green-100 text-green-700'
                       : notification.type === 'OUTBID'
                       ? 'bg-red-100 text-red-700'

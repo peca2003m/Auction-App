@@ -37,6 +37,11 @@ public class AuctionService {
                 .sellerId(sellerId)
                 .build();
 
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId())
+                    .ifPresent(auction::setCategory);
+        }
+
         auctionRepository.save(auction);
 
         List<String> savedUrls = new ArrayList<>();

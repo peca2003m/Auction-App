@@ -2,6 +2,7 @@ package com.auction.core_service.scheduler;
 
 import com.auction.core_service.config.RabbitMQConfig;
 import com.auction.core_service.entity.Auction;
+import com.auction.core_service.entity.Bid;
 import com.auction.core_service.event.AuctionClosedEvent;
 import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -26,24 +29,26 @@ public class AuctionScheduler {
     @Scheduled(fixedRate = 60000)
     public void closeExpiredAuctions() {
 
-
         List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndsAtBefore("ACTIVE", LocalDateTime.now());
 
         for (Auction auction : expiredAuctions) {
 
             auction.setStatus("CLOSED");
 
-            bidRepository.findFirstByAuctionIdOrderByAmountDesc(auction.getId())
-                    .ifPresent(winningBid -> auction.setWinningBidId(winningBid.getId()));
+            Optional<Bid> winningBid = bidRepository.findFirstByAuctionIdOrderByAmountDesc(auction.getId());
 
+            UUID winnerId = null;
+            if (winningBid.isPresent()) {
+                auction.setWinningBidId(winningBid.get().getId());
+                winnerId = winningBid.get().getBidderId();
+            }
 
             auctionRepository.save(auction);
-
 
             AuctionClosedEvent event = AuctionClosedEvent.builder()
                     .auctionId(auction.getId())
                     .sellerId(auction.getSellerId())
-                    .winnerId(auction.getWinningBidId())
+                    .winnerId(winnerId)
                     .auctionTitle(auction.getTitle())
                     .build();
 
@@ -52,10 +57,6 @@ public class AuctionScheduler {
                     RabbitMQConfig.AUCTION_CLOSED_QUEUE,
                     event
             );
-
         }
-
-
     }
-
 }

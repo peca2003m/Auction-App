@@ -58,6 +58,10 @@ export const userService = {
   getMe: () => userApi.get('/api/users/me'),
 };
 
+export const categoryService = {
+  getAll: () => coreApi.get('/api/categories'),
+};
+
 export const auctionService = {
   getAll: () => coreApi.get('/api/auctions'),
   getById: (id) => coreApi.get(`/api/auctions/${id}`),
