@@ -7,14 +7,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await login(username, password);
       navigate('/auctions');
     } catch (err) {
-      console.error('Login nije uspeo:', err);
+      setError('Invalid username or password.');
     }
   };
 
@@ -42,6 +44,11 @@ export default function LoginPage() {
               className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          {error && (
+            <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+              {error}
+            </div>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
