@@ -1,6 +1,7 @@
 package com.auction.core_service.scheduler;
 
 import com.auction.core_service.config.RabbitMQConfig;
+import com.auction.core_service.dto.AuctionStatusUpdate;
 import com.auction.core_service.entity.Auction;
 import com.auction.core_service.entity.Bid;
 import com.auction.core_service.event.AuctionClosedEvent;
@@ -8,12 +9,14 @@ import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +27,7 @@ public class AuctionScheduler {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     @Scheduled(fixedRate = 60000)
@@ -44,6 +48,11 @@ public class AuctionScheduler {
             }
 
             auctionRepository.save(auction);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/auctions/" + auction.getId(),
+                    new AuctionStatusUpdate("CLOSED", auction.getCurrentPrice())
+            );
 
             AuctionClosedEvent event = AuctionClosedEvent.builder()
                     .auctionId(auction.getId())

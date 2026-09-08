@@ -33,20 +33,29 @@ export default function AuctionDetailPage() {
   fetchAuction();
 }, [id]);
 
-useEffect(() => {
-  connectWebSocket(id, (updatedBid) => {
-    setAuction((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        currentPrice: updatedBid.amount,
-        lastBidderId: updatedBid.bidderId,
-      };
-    });
-  });
+    useEffect(() => {
+        connectWebSocket(id, (update) => {
+            setBidSuccess('');
+            setAuction((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    currentPrice: update.amount || update.currentPrice || prev.currentPrice,
+                    lastBidderId: update.bidderId || prev.lastBidderId,
+                    status: update.status || prev.status,
+                };
+            });
+        });
 
-  return () => disconnectWebSocket();
-}, [id]);
+        return () => disconnectWebSocket();
+    }, [id]);
+
+    useEffect(() => {
+        if (auction?.lastBidderId && auction.lastBidderId !== user?.keycloakId) {
+            setBidSuccess('');
+        }
+    }, [auction?.lastBidderId]);
+
   const handleBid = async (e) => {
     e.preventDefault();
     setBidError('');

@@ -35,7 +35,7 @@ export const authService = {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('client_id', 'auction-client');
-    params.append('client_secret', 'nYLtY4mRFmvX2KT9iStmTN7ONySf4BMm');
+    params.append('client_secret', 'cT48D31AS5SJpqFSqBWa6XZerUyKiWOl');
     params.append('username', username);
     params.append('password', password);
 
