@@ -1,17 +1,25 @@
 package com.auction.core_service.service;
 
+import com.auction.core_service.config.RabbitMQConfig;
 import com.auction.core_service.dto.AuctionDto;
+import com.auction.core_service.dto.AuctionStatusUpdate;
 import com.auction.core_service.entity.Auction;
 import com.auction.core_service.entity.AuctionImage;
+import com.auction.core_service.entity.Bid;
+import com.auction.core_service.event.AuctionClosedEvent;
 import com.auction.core_service.repository.AuctionImageRepository;
 import com.auction.core_service.repository.AuctionRepository;
+import com.auction.core_service.repository.BidRepository;
 import com.auction.core_service.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,6 +29,9 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final CategoryRepository categoryRepository;
     private final AuctionImageRepository auctionImageRepository;
+    private final BidRepository bidRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
 
     @Transactional
@@ -83,6 +94,52 @@ public class AuctionService {
 
         return mapToDto(auction);
 
+    }
+
+    @Transactional
+    public AuctionDto forceCloseAuction(UUID auctionId, UUID sellerId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new RuntimeException("Auction not found"));
+
+        if (!auction.getSellerId().equals(sellerId)) {
+            throw new RuntimeException("Not your auction!");
+        }
+
+        if (!"ACTIVE".equals(auction.getStatus())) {
+            throw new RuntimeException("Auction is not active!");
+        }
+
+        auction.setStatus("CLOSED");
+
+        Optional<Bid> winningBid = bidRepository.findFirstByAuctionIdOrderByAmountDesc(auctionId);
+        UUID winnerId = null;
+        if (winningBid.isPresent()) {
+            auction.setWinningBidId(winningBid.get().getId());
+            winnerId = winningBid.get().getBidderId();
+        }
+
+        auctionRepository.save(auction);
+
+        messagingTemplate.convertAndSend(
+                "/topic/auctions/" + auctionId,
+                new AuctionStatusUpdate("CLOSED", auction.getCurrentPrice())
+        );
+
+        AuctionClosedEvent event = AuctionClosedEvent.builder()
+                .auctionId(auctionId)
+                .sellerId(sellerId)
+                .winnerId(winnerId)
+                .auctionTitle(auction.getTitle())
+                .build();
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.AUCTION_EXCHANGE,
+                RabbitMQConfig.AUCTION_CLOSED_QUEUE,
+                event
+        );
+
+
+        return mapToDto(auction);
     }
 
     private AuctionDto mapToDto(Auction auction){

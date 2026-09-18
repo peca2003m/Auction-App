@@ -26,6 +26,12 @@ public class AuctionController {
 
     }
 
+    @PostMapping("/{id}/close")
+    public AuctionDto closeAuction(@PathVariable UUID id, JwtAuthenticationToken token) {
+        UUID sellerId = UUID.fromString(token.getName());
+        return auctionService.forceCloseAuction(id, sellerId);
+    }
+
     @GetMapping
     public List<AuctionDto> getAuctions(){
         return auctionService.getAuctions();

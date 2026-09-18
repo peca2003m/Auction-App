@@ -35,7 +35,7 @@ export const authService = {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('client_id', 'auction-client');
-    params.append('client_secret', 'cT48D31AS5SJpqFSqBWa6XZerUyKiWOl');
+    params.append('client_secret', 'nYLtY4mRFmvX2KT9iStmTN7ONySf4BMm');
     params.append('username', username);
     params.append('password', password);
 
@@ -64,6 +64,7 @@ export const categoryService = {
 
 export const auctionService = {
   getAll: () => coreApi.get('/api/auctions'),
+  forceClose: (id) => coreApi.post(`/api/auctions/${id}/close`),
   getById: (id) => coreApi.get(`/api/auctions/${id}`),
   create: (data) => coreApi.post('/api/auctions', data),
   placeBid: (auctionId, amount) => coreApi.post(`/api/auctions/${auctionId}/bids`, { amount }),

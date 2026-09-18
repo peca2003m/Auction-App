@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { auctionService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [myAuctions, setMyAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMyAuctions = async () => {
@@ -56,7 +58,11 @@ export default function ProfilePage() {
         ) : (
           <div className="flex flex-col gap-3">
             {myAuctions.map(auction => (
-              <div key={auction.id} className="border rounded-lg p-4 flex justify-between items-center">
+              <div 
+                key={auction.id} 
+                className="border rounded-lg p-4 flex justify-between items-center cursor-pointer hover:shadow-md transition"
+                onClick={() => navigate(`/auctions/${auction.id}`)}
+              >
                 <div>
                   <h3 className="font-semibold">{auction.title}</h3>
                   <p className="text-sm text-gray-500">

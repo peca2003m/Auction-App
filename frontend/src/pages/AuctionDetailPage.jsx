@@ -18,43 +18,51 @@ export default function AuctionDetailPage() {
   const [bidSuccess, setBidSuccess] = useState('');
 
   const fetchAuction = async () => {
-  try {
-    const response = await auctionService.getById(id);
-    //console.log("Auction Response Data:", response.data);
-    setAuction(response.data);
-  } catch (err) {
-    setError('Error loading auction.');
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const response = await auctionService.getById(id);
+      setAuction(response.data);
+    } catch (err) {
+      setError('Error loading auction.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForceClose = async () => {
+    if (!window.confirm('Are you sure you want to close this auction?')) return;
+    try {
+      await auctionService.forceClose(id);
+    } catch (err) {
+      console.error('Error closing auction:', err);
+    }
+  };
 
   useEffect(() => {
-  fetchAuction();
-}, [id]);
+    fetchAuction();
+  }, [id]);
 
-    useEffect(() => {
-        connectWebSocket(id, (update) => {
-            setBidSuccess('');
-            setAuction((prev) => {
-                if (!prev) return prev;
-                return {
-                    ...prev,
-                    currentPrice: update.amount || update.currentPrice || prev.currentPrice,
-                    lastBidderId: update.bidderId || prev.lastBidderId,
-                    status: update.status || prev.status,
-                };
-            });
-        });
+  useEffect(() => {
+    connectWebSocket(id, (update) => {
+      setBidSuccess('');
+      setAuction((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          currentPrice: update.amount || update.currentPrice || prev.currentPrice,
+          lastBidderId: update.bidderId || prev.lastBidderId,
+          status: update.status || prev.status,
+        };
+      });
+    });
 
-        return () => disconnectWebSocket();
-    }, [id]);
+    return () => disconnectWebSocket();
+  }, [id]);
 
-    useEffect(() => {
-        if (auction?.lastBidderId && auction.lastBidderId !== user?.keycloakId) {
-            setBidSuccess('');
-        }
-    }, [auction?.lastBidderId]);
+  useEffect(() => {
+    if (auction?.lastBidderId && auction.lastBidderId !== user?.keycloakId) {
+      setBidSuccess('');
+    }
+  }, [auction?.lastBidderId]);
 
   const handleBid = async (e) => {
     e.preventDefault();
@@ -104,18 +112,18 @@ export default function AuctionDetailPage() {
 
         <p className="text-gray-600 mb-6">{auction.description}</p>
 
-      {auction.imageUrls && auction.imageUrls.length > 0 && (
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {auction.imageUrls.map((url, i) => (
-            <img
-              key={i}
-              src={url}
-              alt={`auction ${i + 1}`}
-              className="w-32 h-32 object-cover rounded border"
-            />
-          ))}
-        </div>
-      )}
+        {auction.imageUrls && auction.imageUrls.length > 0 && (
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {auction.imageUrls.map((url, i) => (
+              <img
+                key={i}
+                src={url}
+                alt={`auction ${i + 1}`}
+                className="w-32 h-32 object-cover rounded border"
+              />
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gray-50 rounded p-4">
@@ -133,8 +141,19 @@ export default function AuctionDetailPage() {
         </p>
 
         {isSeller && (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded text-sm">
-            This is your auction
+          <div className="mt-4">
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded text-sm">
+              This is your auction
+            </div>
+
+            {auction.status === 'ACTIVE' && (
+              <button
+                onClick={handleForceClose}
+                className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-700 transition font-medium"
+              >
+                Close Auction Now
+              </button>
+            )}
           </div>
         )}
       </div>
