@@ -2,6 +2,8 @@ package com.auction.core_service.controller;
 
 
 import com.auction.core_service.dto.AuctionDto;
+import com.auction.core_service.event.BidKafkaEvent;
+import com.auction.core_service.kafka.BidHistoryConsumer;
 import com.auction.core_service.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -16,7 +18,7 @@ import java.util.UUID;
 public class AuctionController {
 
     private final AuctionService auctionService;
-
+    private final BidHistoryConsumer bidHistoryConsumer;
 
     @PostMapping
     public AuctionDto createAuction(@RequestBody AuctionDto request, JwtAuthenticationToken token){
@@ -37,6 +39,10 @@ public class AuctionController {
         return auctionService.getAuctions();
     }
 
+    @GetMapping("/{id}/bid-history")
+    public List<BidKafkaEvent> getBidHistory(@PathVariable UUID id) {
+        return bidHistoryConsumer.getHistory(id);
+    }
 
     @GetMapping("/{id}")
     public AuctionDto getAuctionById(@PathVariable UUID id){

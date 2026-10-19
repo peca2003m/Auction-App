@@ -1,14 +1,17 @@
 package com.auction.core_service.service;
 
+import com.auction.core_service.config.KafkaConfig;
 import com.auction.core_service.config.RabbitMQConfig;
 import com.auction.core_service.dto.BidDto;
 import com.auction.core_service.entity.Auction;
 import com.auction.core_service.entity.Bid;
+import com.auction.core_service.event.BidKafkaEvent;
 import com.auction.core_service.event.BidPlacedEvent;
 import com.auction.core_service.repository.AuctionRepository;
 import com.auction.core_service.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ public class BidService {
     private final AuctionRepository auctionRepository;
     private final RabbitTemplate rabbitTemplate;
     private final SimpMessagingTemplate messagingTemplate;
+    private final KafkaTemplate<String, BidKafkaEvent> kafkaTemplate;
 
 
     @Transactional
@@ -85,6 +89,16 @@ public class BidService {
                 "/topic/auctions/" + auctionId,
                 mapToDto(bid)
         );
+
+        BidKafkaEvent kafkaEvent = BidKafkaEvent.builder()
+                .auctionId(auctionId)
+                .bidderId(bidderId)
+                .amount(amount)
+                .placedAt(bid.getPlacedAt())
+                .auctionTitle(auction.getTitle())
+                .build();
+
+        kafkaTemplate.send(KafkaConfig.BID_EVENTS_TOPIC, auctionId.toString(), kafkaEvent);
 
         return mapToDto(bid);
     }
