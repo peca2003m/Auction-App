@@ -68,6 +68,7 @@ export const auctionService = {
   getById: (id) => coreApi.get(`/api/auctions/${id}`),
   create: (data) => coreApi.post('/api/auctions', data),
   placeBid: (auctionId, amount) => coreApi.post(`/api/auctions/${auctionId}/bids`, { amount }),
+  generateDescription: (title, category) => coreApi.post('/api/auctions/generate-description', { title, category }),
 };
 
 export const notificationService = {

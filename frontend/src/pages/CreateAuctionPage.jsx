@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auctionService } from '../services/api';
-import { categoryService } from '../services/api';
+import { auctionService, categoryService } from '../services/api';
 
 const CLOUDINARY_CLOUD_NAME = 'defhuvc3m';
 const CLOUDINARY_PRESET = 'AuctionApp';
@@ -21,8 +20,10 @@ export default function CreateAuctionPage() {
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState('');
 
+  const [generating, setGenerating] = useState(false);
+
   useEffect(() => {
-  categoryService.getAll().then(res => setCategories(res.data));
+    categoryService.getAll().then(res => setCategories(res.data));
   }, []);
 
   const handleImageChange = async (e) => {
@@ -80,11 +81,31 @@ export default function CreateAuctionPage() {
     }
   };
 
+  const handleGenerateDescription = async () => {
+    if (!title) {
+      alert('Enter a title before generating description!');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const selectedCategory = categories.find(cat => String(cat.id) === String(categoryId));
+      const categoryName = selectedCategory ? selectedCategory.name : 'General';
+
+      const response = await auctionService.generateDescription(title, categoryName);
+      setDescription(response.data);
+    } catch (err) {
+      console.error('Error generating description:', err);
+    } finally {
+      setGenerating(false);
+    }
+  };
+  
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Create Auction</h1>
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
+        
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Title *</label>
           <input
@@ -111,13 +132,29 @@ export default function CreateAuctionPage() {
         </div>
         
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Description</label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium">Description</label>
+            <button
+              type="button"
+              onClick={handleGenerateDescription}
+              disabled={generating}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 transition-all shadow-sm"
+            >
+              {generating ? (
+                <>
+                  <span className="animate-spin">⏳</span> Generisanje...
+                </>
+              ) : (
+                <>✨ Generate with AI</>
+              )}
+            </button>
+          </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={4}
-            placeholder="Enter description"
+            placeholder="Enter description or use AI to generate one..."
           />
         </div>
 
@@ -167,14 +204,14 @@ export default function CreateAuctionPage() {
           <button
             type="submit"
             disabled={loading || uploading}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
             {loading ? 'Creating...' : 'Create Auction'}
           </button>
           <button
             type="button"
             onClick={() => navigate('/auctions')}
-            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 font-medium"
           >
             Cancel
           </button>

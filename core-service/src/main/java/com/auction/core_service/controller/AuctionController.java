@@ -1,9 +1,11 @@
 package com.auction.core_service.controller;
 
 
+import com.auction.core_service.dto.AiDescriptionDTO;
 import com.auction.core_service.dto.AuctionDto;
 import com.auction.core_service.event.BidKafkaEvent;
 import com.auction.core_service.kafka.BidHistoryConsumer;
+import com.auction.core_service.service.AiService;
 import com.auction.core_service.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -19,6 +21,7 @@ public class AuctionController {
 
     private final AuctionService auctionService;
     private final BidHistoryConsumer bidHistoryConsumer;
+    private final AiService aiService;
 
     @PostMapping
     public AuctionDto createAuction(@RequestBody AuctionDto request, JwtAuthenticationToken token){
@@ -32,6 +35,11 @@ public class AuctionController {
     public AuctionDto closeAuction(@PathVariable UUID id, JwtAuthenticationToken token) {
         UUID sellerId = UUID.fromString(token.getName());
         return auctionService.forceCloseAuction(id, sellerId);
+    }
+
+    @PostMapping("/generate-description")
+    public String generateDescription(@RequestBody AiDescriptionDTO aiDescriptionDTO) {
+        return aiService.generateAuctionDescription(aiDescriptionDTO.getTitle(), aiDescriptionDTO.getCategory());
     }
 
     @GetMapping
